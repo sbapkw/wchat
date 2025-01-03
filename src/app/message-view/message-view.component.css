@@ -1,0 +1,35 @@
+.message-container
+{
+    display: flex;
+    align-items: start;
+    justify-content: center;
+    flex-direction: column;
+    background-color: white;
+    border-radius: 8px;
+    padding: 5px 20px;
+    margin-top: 10px;
+    max-width: 350px;
+    height: auto;
+}
+.sender-and-date
+{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: row;
+}
+#sender
+{
+    color: rgb(59, 58, 55);
+    font-size: 12px;
+}
+#date
+{
+    color: #ada8a8;
+    font-size: 11px;
+    margin-left: 5px;
+}
+#message
+{
+    margin-top: 5px;
+}
