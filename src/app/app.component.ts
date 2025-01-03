@@ -16,7 +16,7 @@ export class AppComponent implements OnInit
   messsages: Message[] = [];
   public showMessages: Message[] = [];
   public start = 0;
-  public end = 50;
+  public end = 60;
 
   searchText: string = "";
   searchDate: Date = new Date();
@@ -50,7 +50,7 @@ export class AppComponent implements OnInit
   
   getClass = (message:Message): string =>
   {
-    if (message.sender == "Samesh")
+    if (message.sender.toUpperCase().startsWith("❤️ S ❤️"))
     {
       return "left"
     }
@@ -82,13 +82,13 @@ export class AppComponent implements OnInit
           
                   const messageObj = new Message();
                   messageObj.date = this.parseCustomDate(date);
-                  if (sender.includes("Samesh"))
+                  if (sender.toUpperCase().startsWith("S"))
                   {
-                    messageObj.sender = "Samesh";
+                    messageObj.sender = "❤️ S ❤️";
                   }
                   else
                   {
-                    messageObj.sender = "Pamosha";  
+                    messageObj.sender = "❤️ P ❤️";  
                   }
                   
                   messageObj.message = message;
@@ -126,13 +126,13 @@ export class AppComponent implements OnInit
 
             let messageObject = new Message();
             messageObject.date = new Date(date);
-            if (sender.includes("SBA"))
+            if (sender.toUpperCase().startsWith("S"))
             {
-              messageObject.sender = "Samesh";
+              messageObject.sender = "❤️ S ❤️";
             }
             else
             {
-              messageObject.sender = "Pamosha";
+              messageObject.sender = "❤️ P ❤️";
             }
             
             messageObject.message = message;

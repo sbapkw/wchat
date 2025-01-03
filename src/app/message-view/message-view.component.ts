@@ -7,7 +7,8 @@ import { Message } from '../Message';
   styleUrls: ['./message-view.component.css']
 })
 export class MessageViewComponent implements OnInit
-{  
+{
+
   @Input() max: number = 0;
   @Input() message: Message = new Message();
   @Output() eventEmitter: EventEmitter<void> = new EventEmitter();
@@ -25,11 +26,20 @@ export class MessageViewComponent implements OnInit
         });
       },
       {
-        root: null, // Use the viewport as the root
-        threshold: 1.0, // Trigger when the entire item is in view
+        root: null,
+        threshold: 1.0,
       }
     );
 
     observer.observe(this.el.nativeElement);
   }
+
+getClass(message: Message): string
+{
+  if (message.sender.toUpperCase().startsWith("❤️ P ❤️"))
+  {
+    return 'other-color';  
+  }
+  return '';
+}  
 }

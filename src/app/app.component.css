@@ -28,7 +28,7 @@
 .viewport 
 {
   height: 500px;
-  width: 55vw;
+  width: 80vw;
 }
 
 #search-input
@@ -40,7 +40,7 @@
 .actions
 {
     display: grid;
-    width: 55vw;
+    width: 80vw;
     grid-template-columns: 1fr;
     grid-template-rows: 1fr;
     align-items: center;
@@ -50,4 +50,15 @@
 #date-picker
 {
    width: 100%;
+}
+
+@media screen and (min-width: 1000px) {
+    .viewport 
+    {
+        width: 55vw;
+    }
+    .actions
+    {
+        width: 55vw;
+    }
 }

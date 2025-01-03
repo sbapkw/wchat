@@ -1,7 +1,8 @@
-<div class="message-container">
+<div class="message-container" [ngClass]="getClass(message)">
     <div class="sender-and-date">
-        <p id="sender">{{message.sender}}</p>
-        <p id="date">{{message.date.toLocaleString()}}</p>
+        <span id="sender">{{message.sender}}</span>
+        <span id="date">{{message.date.toDateString()}}</span>
     </div>
     <p id="message">{{message.message}}</p>
+    <span id="time-info">{{message.date.getHours() + ":" + message.date.getMinutes()}}</span>
 </div>

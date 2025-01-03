@@ -11,7 +11,7 @@
 
     
 
-    <cdk-virtual-scroll-viewport itemSize="100" class="viewport">
+    <cdk-virtual-scroll-viewport itemSize="180" class="viewport">
         <app-message-view class="message-view" [ngClass]="getClass(message)" *cdkVirtualFor="let message of showMessages" 
         [message]="message" [max]="this.end" (eventEmitter)="called()">
         </app-message-view>
