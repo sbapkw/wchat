@@ -5,15 +5,17 @@
         <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
         <mat-datepicker #picker></mat-datepicker>
       </mat-form-field>
-      <input id="search-input" type="text" placeholder="{{'Search across ' + (messsages.length | number) + ' messages...'}}" [(ngModel)]="searchText"
-    (keyup)="onKeyDown()">
+      <div class="search-input-container">
+        <input id="search-input" type="text" placeholder="{{'Search across ' + (messsages.length | number) + ' messages...'}}" [(ngModel)]="searchText">
+    <button (click)="onKeyDown()">Search</button>
+      </div>
     </div>
 
     
 
     <cdk-virtual-scroll-viewport itemSize="180" class="viewport">
         <app-message-view class="message-view" [ngClass]="getClass(message)" *cdkVirtualFor="let message of showMessages" 
-        [message]="message" [max]="this.end" (eventEmitter)="called()">
+        [message]="message" [max]="showMessages.length" (eventEmitter)="called($event)" [key]="this.key">
         </app-message-view>
     </cdk-virtual-scroll-viewport>
 </div>

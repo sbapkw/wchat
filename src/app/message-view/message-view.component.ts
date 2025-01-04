@@ -11,18 +11,27 @@ export class MessageViewComponent implements OnInit
 
   @Input() max: number = 0;
   @Input() message: Message = new Message();
-  @Output() eventEmitter: EventEmitter<void> = new EventEmitter();
+  @Output() eventEmitter: EventEmitter<number> = new EventEmitter();
+  @Input() key: string = "";
 
   constructor(private el: ElementRef) {}
 
-  ngOnInit(): void {
+  ngOnInit(): void
+  {
     const observer = new IntersectionObserver(
       (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting && this.max - 1 == this.message.index)
+        entries.forEach((entry) =>
+        {
+          // console.log(entry.boundingClientRect.bottom + ' index:' + this.message.index)
+          if (entry.isIntersecting && entry.boundingClientRect.bottom > 650)
           {
-            this.eventEmitter.emit();
+            this.eventEmitter.emit(this.message.index);
           }
+          else if(this.message.index >= this.max - 1)
+          {
+            this.eventEmitter.emit(this.max);
+          }
+          
         });
       },
       {
@@ -41,5 +50,5 @@ getClass(message: Message): string
     return 'other-color';  
   }
   return '';
-}  
+  }  
 }
