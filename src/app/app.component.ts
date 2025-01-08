@@ -11,7 +11,7 @@ import { ActivatedRoute } from '@angular/router';
 })
 export class AppComponent implements OnInit
 {
-  title = 'wchat';
+  title = 'Memories';
 
   messsages: Message[] = [];
   public showMessages: Message[] = [];
@@ -27,6 +27,8 @@ export class AppComponent implements OnInit
 
   lastMaxScrolledIndex: number = -1;
 
+  dictionary = new Map<string,string[]>();
+
   constructor(private http: HttpClient, private route: ActivatedRoute)
   { 
     
@@ -34,12 +36,26 @@ export class AppComponent implements OnInit
 
   ngOnInit(): void
   {
-    this.route.queryParams.subscribe(params =>
+    this.route.queryParams.subscribe(async params =>
     {
       if (params['key'] != null)
       {
         this.key = params['key'];
-        this.setChat1();
+        for (let i = 1; i <= 35; i++)
+        {
+          await this.readTextFileSync('assets/content1/content_1.0.' + i + '.txt');
+          if (i == 1)
+          {
+            this.setMessages(this.start, this.end);
+          }
+        }
+        for (let i = 1; i <= 10; i++)
+        {
+          await this.readTextFileSync('assets/content2/content_2.0.' + i + '.txt');
+        }
+        // await this.readTextFileSync("assets/content1/content_1.0.1.txt");
+        // await this.readTextFileSync("assets/content1/content_1.0.2.txt");
+        //this.setMessages(this.start, this.end);
       }
     });
   }
@@ -76,7 +92,7 @@ export class AppComponent implements OnInit
   }
   setChat2 = () =>
   {
-      this.readTextFile("assets/chat2-line-encrypted.txt").subscribe(data =>
+      this.readTextFile("assets/content2/content_2.0.1.txt").subscribe(data =>
       { 
         const lines = data.split('\n')
         
@@ -100,7 +116,7 @@ export class AppComponent implements OnInit
   }
   setChat1 = () =>
   {
-    this.readTextFile("assets/chat1-line-encrypted.txt").subscribe(data =>
+    this.readTextFile("assets/content1/content_1.0.1.txt").subscribe(data =>
     {
       const lines = data.split('\n')
       lines.forEach(line =>
@@ -108,17 +124,26 @@ export class AppComponent implements OnInit
         //this.encrypt2(line);
         if (this.messsages.length > this.end)
         {
-          this.extractChat1Line(line,false);
+          this.extractChat1Line(line,true);
         }
         else
         {
-          line = this.decrypt(line)
-          this.extractChat1Line(line,true);
+          const decryptedLine = this.decrypt(line)
+          this.extractChat1Line(decryptedLine,true);
         }
       });
 
       //this.saveFile(this.encryptedLines, 'chat1-line-encrypted')
       this.setChat2();
+
+      // console.log('done')
+      // for (const [key, value] of this.dictionary)
+      // {
+      //   let str = ''
+      //   value?.forEach(line => str = str + line + "\r\n")
+      //   console.log(value)
+      //   this.saveFile(str,'content-1.0.0-' + key);
+      // }
     });
   }
   onKeyDown = () =>
@@ -207,9 +232,7 @@ export class AppComponent implements OnInit
           messageObject.index = this.messsages.length;
           messageObject.message = message;
           messageObject.decrypted = true;
-
           this.messsages.push(messageObject);
-
         }
       }
     }
@@ -254,7 +277,6 @@ export class AppComponent implements OnInit
             messageObj.index = this.messsages.length;
             messageObj.message = message;
             messageObj.decrypted = true;
-    
             this.messsages.push(messageObj);
           }
         }
@@ -347,6 +369,38 @@ export class AppComponent implements OnInit
           this.extractChat2Message(message);
         }
     });  
+  }
+
+  async readTextFileSync(assetStringName: string): Promise<string>
+  {
+    try
+    {
+      const response = await this.http.get(assetStringName, { responseType: 'text' }).toPromise();
+      this.setContent(response as string);
+      return response as string;
+    }
+    catch (error)
+    {
+      console.error('Error reading the file:', error);
+      throw error;
+    }
+  }
+  setContent = (data:string) =>
+  {
+    const lines = data.split('\n')
+    lines.forEach(line =>
+    { 
+      //this.encrypt2(line);
+      if (this.messsages.length > this.end)
+      {
+        this.extractChat1Line(line,false);
+      }
+      else
+      {
+        const decryptedLine = this.decrypt(line)
+        this.extractChat1Line(decryptedLine,true);
+      }
+    });
   }
 }
 
