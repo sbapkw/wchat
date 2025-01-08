@@ -1,3 +1,5 @@
+import { ContentType } from "./ContentType";
+
 export class Message
 {
     public index: number = 0;
@@ -6,5 +8,5 @@ export class Message
     public message: string = "Encrypted Text";
     public decrypted: boolean = false;
     public encryptedText: string = "";
-    public source: string = "";
+    public source: ContentType = ContentType.CONTENT1;
 }

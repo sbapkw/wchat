@@ -3,6 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { Message } from './Message';
 import * as CryptoJS from 'crypto-js';
 import { ActivatedRoute } from '@angular/router';
+import { ContentType } from './ContentType';
 
 @Component({
   selector: 'app-root',
@@ -27,8 +28,6 @@ export class AppComponent implements OnInit
 
   lastMaxScrolledIndex: number = -1;
 
-  dictionary = new Map<string,string[]>();
-
   constructor(private http: HttpClient, private route: ActivatedRoute)
   { 
     
@@ -43,19 +42,21 @@ export class AppComponent implements OnInit
         this.key = params['key'];
         for (let i = 1; i <= 35; i++)
         {
-          await this.readTextFileSync('assets/content1/content_1.0.' + i + '.txt');
+          await this.readTextFileSync('assets/content1/content_1.0.' + i + '.txt', ContentType.CONTENT1);
           if (i == 1)
           {
             this.setMessages(this.start, this.end);
           }
         }
-        for (let i = 1; i <= 10; i++)
+        for (let i = 1; i <= 9; i++)
         {
-          await this.readTextFileSync('assets/content2/content_2.0.' + i + '.txt');
+          await this.readTextFileSync('assets/content2/content_2.0.' + i + '.txt', ContentType.CONTENT2);
         }
-        // await this.readTextFileSync("assets/content1/content_1.0.1.txt");
-        // await this.readTextFileSync("assets/content1/content_1.0.2.txt");
-        //this.setMessages(this.start, this.end);
+        
+      }
+      if (params['encrypt'] != null)
+      {
+        this.encryptChatLines("assets/content_2.0.0.txt", "content_2.0.0-line-encrypted", ContentType.CONTENT2);
       }
     });
   }
@@ -63,8 +64,7 @@ export class AppComponent implements OnInit
   setMessages = (start: number, end: number) =>
   {
     const newMessages = this.messsages.slice(start, end);
-    const undescryptedMesages = newMessages.filter(message => !message.decrypted);
-    this.decryptMessageList(undescryptedMesages);
+    this.decryptMessageList(newMessages);
     this.showMessages = [...this.showMessages,...newMessages]
   }
   
@@ -90,73 +90,30 @@ export class AppComponent implements OnInit
       this.lastMaxScrolledIndex = index;
     }
   }
-  setChat2 = () =>
+  encryptChatLines = (inputFileName:string, outputFileName:string, contentType:ContentType) =>
   {
-      this.readTextFile("assets/content2/content_2.0.1.txt").subscribe(data =>
-      { 
-        const lines = data.split('\n')
-        
-        lines.forEach(line =>
-        {
-          //this.encrypt2(line);
-          if (this.messsages.length > this.end)
-          {
-            this.extractChat2Line(line, false);
-          }
-          else
-          {
-            line = this.decrypt(line);
-            this.extractChat2Line(line, true);
-          }
-          
-        });
-        //this.saveFile(this.encryptedLines, 'chat2-line-encrypted')
-        this.setMessages(this.start, this.end);
-      })
-  }
-  setChat1 = () =>
-  {
-    this.readTextFile("assets/content1/content_1.0.1.txt").subscribe(data =>
+    this.encryptedLines = "";
+    this.readTextFile(inputFileName).subscribe(data =>
     {
       const lines = data.split('\n')
       lines.forEach(line =>
       { 
-        //this.encrypt2(line);
-        if (this.messsages.length > this.end)
-        {
-          this.extractChat1Line(line,true);
-        }
-        else
-        {
-          const decryptedLine = this.decrypt(line)
-          this.extractChat1Line(decryptedLine,true);
-        }
+        this.encryptLine(line,contentType);
       });
 
-      //this.saveFile(this.encryptedLines, 'chat1-line-encrypted')
-      this.setChat2();
-
-      // console.log('done')
-      // for (const [key, value] of this.dictionary)
-      // {
-      //   let str = ''
-      //   value?.forEach(line => str = str + line + "\r\n")
-      //   console.log(value)
-      //   this.saveFile(str,'content-1.0.0-' + key);
-      // }
+      this.saveFile(this.encryptedLines, outputFileName)
     });
   }
   onKeyDown = () =>
   {
-    const encryptedMessages = this.messsages.filter(message => !message.decrypted);
-    this.decryptMessageList(encryptedMessages);
-
+    this.decryptMessageList(this.messsages);
     const filtered = this.messsages.filter(message => message.message.toUpperCase().includes(this.searchText.toUpperCase()))
     this.showMessages = filtered;
   }
   dateChanged = () =>
   {
     const filtered = this.messsages.filter(message => message.date.toLocaleDateString() == this.searchDate.toLocaleDateString());
+    this.decryptMessageList(filtered);
     this.showMessages = filtered;
   }
    parseCustomDate = (dateString:string) => {
@@ -183,200 +140,91 @@ export class AppComponent implements OnInit
     a.click();
   
     window.URL.revokeObjectURL(url);
-  }
-  encrypt = (data:any, name:string) =>
-  {
-    var ciphertext = CryptoJS.AES.encrypt(data, this.key).toString();
-    this.saveFile(ciphertext,name)
-  }
+   }
+  
   decrypt = (data: any): string =>
   {
     var bytes  = CryptoJS.AES.decrypt(data, this.key);
     var originalText = bytes.toString(CryptoJS.enc.Utf8);
     return originalText;
   }
-  encrypt2 = (data:string) =>
+
+  encryptString = (data:string) =>
   {
-    var ciphertext = CryptoJS.AES.encrypt(data, this.key).toString();
-    ciphertext = ciphertext + "\r\n";
-    this.encryptedLines  = this.encryptedLines + ciphertext;
+      return CryptoJS.AES.encrypt(data, this.key).toString();
   }
 
-  extractChat1Line = (line:string, decrypt: boolean) =>
+  extractNewLine = (line: string, decrypt: boolean, contentType:ContentType): Message =>
   {
-    if (decrypt)
-    {
-      const split1 = line.split(']');
-      if (split1[0] && split1[1])
-      {
-
-        const date = split1[0].split("[")[1].trim();
-        const split2 = split1[1].split(":");
-
-        if (split2[0] && split2[1])
-        {
-          const sender = split2[0].trim();
-          const message = split2[1].trim();
-
-          let messageObject = new Message();
-          messageObject.date = new Date(date);
-          if (sender.toUpperCase().startsWith("S"))
-          {
-            messageObject.sender = "❤️ S ❤️";
-          }
-          else
-          {
-            messageObject.sender = "❤️ P ❤️";
-          }
+    const messageObj = new Message();
+    const splitted = line.split("~");
+    const date = splitted[0].trim();
+    if (decrypt) {
+      if (splitted[0] && splitted[1]) {
           
-          messageObject.index = this.messsages.length;
-          messageObject.message = message;
-          messageObject.decrypted = true;
-          this.messsages.push(messageObject);
-        }
-      }
-    }
-    else
-    {
-      const messageObj = new Message();  
-      messageObj.encryptedText = line;
-      messageObj.decrypted = false;
-      messageObj.source = "chat1";
-      messageObj.index = this.messsages.length
-      this.messsages.push(messageObj);
-    }
-  }
-
-  extractChat2Line = (line: string, decrypt: boolean) =>
-  {
-    if (decrypt)
-    {
-      const splitted = line.split("-");
-      if (splitted)
-      {
-        if (splitted[0] && splitted[1])
-        {
-          const date = splitted[0].trim();
-          const splitted2 = splitted[1].split(":");
-          if (splitted2[0] && splitted2[1])
-          {
-            const sender = splitted2[0].trim();
-            const message = splitted2[1].trim();
+        const decrypted = this.decrypt(splitted[1]);
+        const splitted2 = decrypted.split("~")
+          
+        if (splitted2[0] && splitted2[1]) {
+          const sender = splitted2[0];
+          const message = splitted2[1];
     
-            const messageObj = new Message();
-            messageObj.date = this.parseCustomDate(date);
-            if (sender.toUpperCase().startsWith("S"))
-            {
-              messageObj.sender = "❤️ S ❤️";
-            }
-            else
-            {
-              messageObj.sender = "❤️ P ❤️";  
-            }
             
-            messageObj.index = this.messsages.length;
-            messageObj.message = message;
-            messageObj.decrypted = true;
-            this.messsages.push(messageObj);
+          if (contentType == ContentType.CONTENT2) {
+            messageObj.date = this.parseCustomDate(date);
           }
+          if (contentType == ContentType.CONTENT1) {
+            messageObj.date = new Date(date);
+          }
+          if (sender.toUpperCase().startsWith("S")) {
+            messageObj.sender = "❤️ S ❤️";
+          }
+          else {
+            messageObj.sender = "❤️ P ❤️";
+          }
+            
+          messageObj.index = this.messsages.length;
+          messageObj.message = message;
+          messageObj.decrypted = true;
+          messageObj.source = contentType;
         }
-      
       }
+      
     }
-    else
-    {
-      const messageObj = new Message();
+    else {
       messageObj.encryptedText = line;
       messageObj.decrypted = false;
-      messageObj.source = 'chat2';
       messageObj.index = this.messsages.length;
-      this.messsages.push(messageObj);
+      messageObj.source = contentType;
+      if (contentType == ContentType.CONTENT2) {
+        messageObj.date = this.parseCustomDate(date);
+      }
+      if (contentType == ContentType.CONTENT1) {
+        messageObj.date = new Date(date);
+      }
     }
+    return messageObj;
   }
-  extractChat1Message = (messageObject:Message) =>
-    {
-      const line = this.decrypt(messageObject.encryptedText);
-      const split1 = line.split(']');
-      if (split1[0] && split1[1])
-      {
-    
-        const date = split1[0].split("[")[1].trim();
-        const split2 = split1[1].split(":");
-    
-        if (split2[0] && split2[1])
-        {
-          const sender = split2[0].trim();
-          const message = split2[1].trim();
-    
-          messageObject.date = new Date(date);
-          if (sender.toUpperCase().startsWith("S"))
-          {
-            messageObject.sender = "❤️ S ❤️";
-          }
-          else
-          {
-            messageObject.sender = "❤️ P ❤️";
-          }
-          
-          messageObject.message = message;
-          messageObject.decrypted = true;
-        }
-      }
-    }
-      
-    extractChat2Message = (messageObj:Message) =>
-    {
-      const line = this.decrypt(messageObj.encryptedText);
-      const splitted = line.split("-");
-      if (splitted)
-      {
-        if (splitted[0] && splitted[1])
-        {
-          const date = splitted[0].trim();
-          const splitted2 = splitted[1].split(":");
-          if (splitted2[0] && splitted2[1])
-          {
-            const sender = splitted2[0].trim();
-            const message = splitted2[1].trim();
-    
-            messageObj.date = this.parseCustomDate(date);
-            if (sender.toUpperCase().startsWith("S"))
-            {
-              messageObj.sender = "❤️ S ❤️";
-            }
-            else
-            {
-              messageObj.sender = "❤️ P ❤️";  
-            }
-            
-            messageObj.message = message;
-            messageObj.decrypted = true;
-          }
-        }
-      
-      }
-    }
+
   decryptMessageList = (messages: Message[]) =>
   {
     messages.forEach(message =>
     {
-        if (message.source == 'chat1')
-        {
-          this.extractChat1Message(message);
-        }
-        else if (message.source == 'chat2')
-        {
-          this.extractChat2Message(message);
-        }
+      if (!message.decrypted)
+      {
+        const newMessage = this.extractNewLine(message.encryptedText, true, message.source);
+        message.sender = newMessage.sender;
+        message.message = newMessage.message;
+      }
     });  
   }
 
-  async readTextFileSync(assetStringName: string): Promise<string>
+  async readTextFileSync(assetStringName: string, contentType:ContentType): Promise<string>
   {
     try
     {
       const response = await this.http.get(assetStringName, { responseType: 'text' }).toPromise();
-      this.setContent(response as string);
+      this.setContent(response as string,contentType);
       return response as string;
     }
     catch (error)
@@ -385,22 +233,67 @@ export class AppComponent implements OnInit
       throw error;
     }
   }
-  setContent = (data:string) =>
+  setContent = (data:string,contentType:ContentType) =>
   {
     const lines = data.split('\n')
     lines.forEach(line =>
     { 
-      //this.encrypt2(line);
       if (this.messsages.length > this.end)
       {
-        this.extractChat1Line(line,false);
+        const messageObj = this.extractNewLine(line, false, contentType);
+        this.messsages.push(messageObj);
       }
       else
       {
-        const decryptedLine = this.decrypt(line)
-        this.extractChat1Line(decryptedLine,true);
+        const messageObj = this.extractNewLine(line, true, contentType);
+        this.messsages.push(messageObj);
       }
     });
+  }
+  encryptLine = (line:string,contentType:ContentType) =>
+  {
+    if (contentType == ContentType.CONTENT1)
+    {
+      const split1 = line.split(']');
+      if (split1[0] && split1[1])
+      {
+  
+        const date = split1[0].split("[")[1].trim();
+        const split2 = split1[1].split(":");
+  
+        if (split2[0] && split2[1])
+        {
+          const sender = split2[0].trim();
+          const message = split2[1].trim();
+  
+          let encryptedPart = this.encryptString(sender + "~" + message);
+          let text = date + "~" + encryptedPart + "\r\n";
+          this.encryptedLines  = this.encryptedLines + text;
+        }
+      }
+    }
+    if (contentType == ContentType.CONTENT2)
+    {
+      const splitted = line.split("-");
+      if (splitted)
+      {
+        if (splitted[0] && splitted[1])
+        {
+          const date = splitted[0].trim();
+          const splitted2 = splitted[1].split(":");
+          if (splitted2[0] && splitted2[1])
+          {
+            const sender = splitted2[0].trim();
+            const message = splitted2[1].trim();
+
+            let encryptedPart = this.encryptString(sender + "~" + message);
+            let text = date + "~" + encryptedPart + "\r\n";
+            this.encryptedLines  = this.encryptedLines + text;
+          }
+        }
+      
+      }
+    }
   }
 }
 
