@@ -4,9 +4,10 @@
     align-items: center;
     justify-content: center;
     flex-direction: column;
-    background-color: #f1f1f1;
+    background-color: #3d3939;
     width: 100vw;
     height: 100vh;
+    background-image: url("src/assets/background.jpg");
 }
 .message-view
 {
@@ -14,7 +15,6 @@
     height: auto;
     display: flex;
     align-items: center;
-    padding: 20px;
 }
 .left
 {
@@ -28,25 +28,39 @@
 .viewport 
 {
   height: 500px;
-  width: 80vw;
+  width: 90vw;
 }
-
+.viewport-duplicate
+{
+    backdrop-filter: blur(20px);
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
 #search-input
 {
-    width: 80%;
-    height: 40px;
+    width: 85%;
+    height: 45px;
     padding: 10px;
+    padding-left: 30px;
+    border: 4px solid  #96f192;
 }
 .search-input-container button
 {
-    width: 20%;
-    height: 40px;
+    width: 15%;
+    height: 45px;
     cursor: pointer;
+    background-color: #96f192;
+    border: none;
+    font-weight: bold;
 }
 .actions
 {
     display: grid;
-    width: 80vw;
+    width: 90vw;
     grid-template-columns: 1fr;
     grid-template-rows: 1fr;
     align-items: center;
@@ -63,13 +77,24 @@
     width: 100%;
 }
 
-@media screen and (min-width: 1000px) {
+@media screen and (min-width: 700px) {
     .viewport 
     {
-        width: 55vw;
+        width: 70vw;
     }
     .actions
     {
-        width: 55vw;
+        width: 70vw;
+    }
+}
+
+@media screen and (min-width: 1200px) {
+    .viewport 
+    {
+        width: 60vw;
+    }
+    .actions
+    {
+        width: 60vw;
     }
 }

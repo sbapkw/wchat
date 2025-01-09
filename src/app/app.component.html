@@ -1,4 +1,5 @@
 <div class="main-container">
+  <div class="viewport-duplicate">
     <div class="actions">
     <mat-form-field id="date-picker">
         <input matInput [matDatepicker]="picker" [(ngModel)]="searchDate" (ngModelChange)="dateChanged()">
@@ -13,9 +14,11 @@
 
     
 
-    <cdk-virtual-scroll-viewport itemSize="180" class="viewport">
-        <app-message-view class="message-view" [ngClass]="getClass(message)" *cdkVirtualFor="let message of showMessages" 
+    <cdk-virtual-scroll-viewport itemSize="100" class="viewport">
+        
+          <app-message-view class="message-view" [ngClass]="getClass(message)" *cdkVirtualFor="let message of showMessages" 
         [message]="message" [max]="showMessages.length" (eventEmitter)="called($event)" [key]="this.key">
         </app-message-view>
     </cdk-virtual-scroll-viewport>
+  </div>
 </div>

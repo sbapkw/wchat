@@ -7,9 +7,10 @@
     background-color: white;
     border-radius: 8px;
     padding: 5px 20px;
-    margin-top: 10px;
     max-width: 350px;
     height: auto;
+    margin-top: 10px;
+    margin-left: 30px;
 }
 .sender-and-date
 {
@@ -49,4 +50,5 @@
 .other-color
 {
     background-color: #d0fecf;
+    margin-right: 30px;
 }
