@@ -9,4 +9,5 @@ export class Message
     public decrypted: boolean = false;
     public encryptedText: string = "";
     public source: ContentType = ContentType.CONTENT1;
+    public wordList:string[] = []
 }

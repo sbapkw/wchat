@@ -40,7 +40,7 @@ export class AppComponent implements OnInit
       if (params['key'] != null)
       {
         this.key = params['key'];
-        for (let i = 1; i <= 35; i++)
+        for (let i = 1; i <= 69; i++)
         {
           await this.readTextFileSync('assets/content1/content_1.0.' + i + '.txt', ContentType.CONTENT1);
           if (i == 1)
@@ -48,16 +48,16 @@ export class AppComponent implements OnInit
             this.setMessages(this.start, this.end);
           }
         }
-        for (let i = 1; i <= 9; i++)
+        for (let i = 1; i <= 18; i++)
         {
           await this.readTextFileSync('assets/content2/content_2.0.' + i + '.txt', ContentType.CONTENT2);
         }
         
       }
-      if (params['encrypt'] != null)
-      {
-        this.encryptChatLines("assets/content_2.0.0.txt", "content_2.0.0-line-encrypted", ContentType.CONTENT2);
-      }
+      // if (params['encrypt'] != null)
+      // {
+      //   this.encryptChatLines("assets/content_2.0.0.txt", "content_2.0.0-line-encrypted", ContentType.CONTENT2);
+      // }
     });
   }
 
@@ -106,8 +106,9 @@ export class AppComponent implements OnInit
   }
   onKeyDown = () =>
   {
-    this.decryptMessageList(this.messsages);
-    const filtered = this.messsages.filter(message => message.message.toUpperCase().includes(this.searchText.toUpperCase()))
+    const hashed = this.createHash(this.searchText.trim().toLowerCase())
+    const filtered = this.messsages.filter(message => message.wordList.includes(hashed))
+    this.decryptMessageList(filtered);
     this.showMessages = filtered;
   }
   dateChanged = () =>
@@ -159,12 +160,15 @@ export class AppComponent implements OnInit
     const messageObj = new Message();
     const splitted = line.split("~");
     const date = splitted[0].trim();
-    if (decrypt) {
-      if (splitted[0] && splitted[1]) {
+    let wordList = splitted[2];
+    if (decrypt)
+    {
+      if (splitted[0] && splitted[1])
+      {
           
         const decrypted = this.decrypt(splitted[1]);
         const splitted2 = decrypted.split("~")
-          
+        
         if (splitted2[0] && splitted2[1]) {
           const sender = splitted2[0];
           const message = splitted2[1];
@@ -187,6 +191,18 @@ export class AppComponent implements OnInit
           messageObj.message = message;
           messageObj.decrypted = true;
           messageObj.source = contentType;
+
+          const wordListArr: string[] = []
+          wordList = wordList.replace("\r", "");
+          wordList = wordList.replace("\n","");
+          wordList = wordList.replace("[", "")
+          wordList = wordList.replace("]", "")
+          const commaList = wordList.split(",")
+          commaList.forEach(comm => {
+            wordListArr.push(comm);
+          })
+
+          messageObj.wordList = wordListArr;
         }
       }
       
@@ -202,6 +218,21 @@ export class AppComponent implements OnInit
       if (contentType == ContentType.CONTENT1) {
         messageObj.date = new Date(date);
       }
+
+      if (wordList)
+      {
+        const wordListArr: string[] = []
+        wordList = wordList.replace("\r", "");
+          wordList = wordList.replace("\n","");
+      wordList = wordList.replace("[", "")
+      wordList = wordList.replace("]", "")
+      const commaList = wordList.split(",")
+      commaList.forEach(comm => {
+        wordListArr.push(comm);
+      })
+
+      messageObj.wordList = wordListArr;
+      }
     }
     return messageObj;
   }
@@ -215,6 +246,7 @@ export class AppComponent implements OnInit
         const newMessage = this.extractNewLine(message.encryptedText, true, message.source);
         message.sender = newMessage.sender;
         message.message = newMessage.message;
+        message.decrypted = newMessage.decrypted;
       }
     });  
   }
@@ -250,6 +282,11 @@ export class AppComponent implements OnInit
       }
     });
   }
+
+  createHash = (inputString:string) => {
+    return CryptoJS.SHA256(inputString).toString()
+  }
+
   encryptLine = (line:string,contentType:ContentType) =>
   {
     if (contentType == ContentType.CONTENT1)
@@ -265,9 +302,18 @@ export class AppComponent implements OnInit
         {
           const sender = split2[0].trim();
           const message = split2[1].trim();
+
+          const spaceSplittedMessage = message.split(" ");
+          const hashArray: string[] = [];
+          spaceSplittedMessage.forEach(word => {
+            const hash = this.createHash(word.trim().toLowerCase());
+            hashArray.push(hash);
+          });
+
+          const hashArrayStr = "[" + hashArray.join(",") + "]";
   
           let encryptedPart = this.encryptString(sender + "~" + message);
-          let text = date + "~" + encryptedPart + "\r\n";
+          let text = date + "~" + encryptedPart + "~" + hashArrayStr +"\r\n";
           this.encryptedLines  = this.encryptedLines + text;
         }
       }
@@ -286,8 +332,19 @@ export class AppComponent implements OnInit
             const sender = splitted2[0].trim();
             const message = splitted2[1].trim();
 
+
+            
+            const spaceSplittedMessage = message.split(" ");
+            const hashArray: string[] = [];
+            spaceSplittedMessage.forEach(word => {
+              const hash = this.createHash(word);
+              hashArray.push(hash);
+            });
+
+            const hashArrayStr = "[" + hashArray.join(",") + "]";
+    
             let encryptedPart = this.encryptString(sender + "~" + message);
-            let text = date + "~" + encryptedPart + "\r\n";
+            let text = date + "~" + encryptedPart + "~" + hashArrayStr +"\r\n";
             this.encryptedLines  = this.encryptedLines + text;
           }
         }
