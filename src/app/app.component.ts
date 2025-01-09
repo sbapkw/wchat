@@ -17,7 +17,7 @@ export class AppComponent implements OnInit
   messsages: Message[] = [];
   public showMessages: Message[] = [];
   public start = 0;
-  public end = 25;
+  public end = 5000;
 
   searchText: string = "";
   searchDate: Date = new Date();
