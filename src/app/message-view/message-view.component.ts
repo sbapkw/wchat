@@ -51,4 +51,35 @@ getClass(message: Message): string
   }
   return '';
   }  
+  getDateTime = () =>
+  {
+    let hour = "" + this.message.date.getHours();
+    let minute = "" + this.message.date.getMinutes();
+
+    if (this.message.date.getHours() < 10)
+    {
+      if (this.message.date.getHours() == 0)
+      {
+        hour = "00";
+      }
+      else
+      {
+        hour = "0" + this.message.date.getHours();
+      }
+    }
+    if (this.message.date.getMinutes() < 10)
+    {
+      if (this.message.date.getMinutes() == 0)
+      {
+        minute = "00";
+      }
+      else
+      {
+        minute = "0" + this.message.date.getMinutes(); 
+      }
+    }
+    return hour + ":" + minute;
+  }
 }
+
+
